@@ -1,0 +1,7 @@
+Cython
+falcon
+redis
+hiredis
+simplejson
+SQLAlchemy
+records

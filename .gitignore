@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+.idea
+env/
+*.log
+*.db
+*.bak
+*.conf
+*.ini
+/public/.webassets-cache
