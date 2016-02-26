@@ -6,7 +6,5 @@ simplejson
 SQLAlchemy
 alembic
 records
-pycco
-testtools
 gevent
 uwsgi
