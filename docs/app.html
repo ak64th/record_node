@@ -18,13 +18,16 @@
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
       <h3>API接口</h3>
-<p>每条url规则对应一个<a href="resources.html">Resource</a></p>
+<p>按falcon的设计模式，每条url规则对应一个<a href="resources.html">资源</a></p>
 <ul>
-<li>/api/start/{game_id}  - 开始游戏 <a href="resources.html#Start">resources.Start</a></li>
+<li>/api/start/{game_id}  - <a href="resources.html#Start">开始游戏</a></li>
+<li>/api/end/{game_id}</li>
+<li>/api/answer/{game_id}/{question_id}</li>
 </ul>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">falcon</span>
+<span class="kn">import</span> <span class="nn">redis</span>
 <span class="kn">from</span> <span class="nn">resources</span> <span class="kn">import</span> <span class="n">Start</span></pre></div>
     </div>
   </div>
@@ -37,8 +40,10 @@
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="n">api</span> <span class="o">=</span> <span class="n">falcon</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
-<span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/start/{game_id}&#39;</span><span class="p">,</span> <span class="n">Start</span><span class="p">())</span>
+      <div class="highlight"><pre><span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">StrictRedis</span><span class="p">()</span>
+
+<span class="n">api</span> <span class="o">=</span> <span class="n">falcon</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
+<span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/start/{game_id}&#39;</span><span class="p">,</span> <span class="n">Start</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
 
 </pre></div>
     </div>

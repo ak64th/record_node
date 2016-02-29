@@ -20,7 +20,8 @@
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span></pre></div>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -29,8 +30,8 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p>noinspection PyMethodMayBeStatic
-<a name="Start">开始游戏</a></p>
+      <h3><a name="Start">开始游戏</a></h3>
+<p>为用户分配uid，为当前游戏分配run_id,，数据保存在redis上</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">class</span> <span class="nc">Start</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span></pre></div>
@@ -55,11 +56,125 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      <p>noinspection PyUnusedLocal</p>
+      <p>客户端开始游戏时请求这个接口</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">on_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">game_id</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;game_id&#39;</span><span class="p">:</span> <span class="n">game_id</span><span class="p">})</span>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">on_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="n">game_id</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <p>如果请求中存在uid，在回复信息中包含uid，否则用hash参数作为key检查redis上是否已经存在保存的字符串。</p>
+<p>可能的请求参数有</p>
+<ul>
+<li>userinfo -- 用户填写的信息</li>
+<li>uid -- 客户端保存的uid</li>
+<li>hash -- 客户端根据用户信息生成的hash值，是一个32位整数</li>
+</ul>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">userinfo</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;userinfo&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>没有填写字段，直接生成run_id</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="ow">not</span> <span class="n">userinfo</span><span class="p">:</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;run_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_run_id</span><span class="p">()})</span>
+            <span class="k">return</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;uid&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">uid</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <p>未分配uid时，客户端会根据用户填写字段用hash函数生成一个32位整数作为备选的uid</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="n">_hash</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param_as_int</span><span class="p">(</span><span class="s1">&#39;hash&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_uid</span><span class="p">(</span><span class="n">game_id</span><span class="p">,</span> <span class="n">_hash</span><span class="p">,</span> <span class="n">userinfo</span><span class="p">)</span>
+        <span class="n">resp</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;uid&#39;</span><span class="p">:</span> <span class="n">uid</span><span class="p">,</span> <span class="s1">&#39;run_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_run_id</span><span class="p">()})</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>生成一个新run_id</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_new_run_id</span><span class="p">():</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>维护一个hash表保存为用户分配的uid和对应的用户信息</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">_set_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">game_id</span><span class="p">,</span> <span class="n">_hash</span><span class="p">,</span> <span class="n">userinfo</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>也可以直接用userinfo作为uid，redis内部会进行hash。缺点是所有需要key的地方都要存这个字符串，占用空间大。hash函数反复执行，消耗性能。</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">uid</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">uid</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>检查已经保存的数据防止hash冲突，大部分情况下第一次就会执行成功</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="n">saved</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hget</span><span class="p">(</span><span class="s1">&#39;game:</span><span class="si">%s</span><span class="s1">:userinfo&#39;</span> <span class="o">%</span> <span class="n">game_id</span><span class="p">,</span> <span class="n">_hash</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">saved</span> <span class="o">==</span> <span class="n">userinfo</span><span class="p">:</span>
+                <span class="n">uid</span> <span class="o">=</span> <span class="n">_hash</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span><span class="s1">&#39;game:</span><span class="si">%s</span><span class="s1">:userinfo&#39;</span> <span class="o">%</span> <span class="n">game_id</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="n">userinfo</span><span class="p">)</span>
+            <span class="n">_hash</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">uid</span>
 
 </pre></div>
     </div>
