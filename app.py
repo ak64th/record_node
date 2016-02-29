@@ -1,26 +1,22 @@
+# coding=utf-8
 import falcon
-import uuid
-import simplejson as json
+import redis
+from resources import Start
 
 
-def check_or_set_uid(req, resp, resource, params):
-    uid = req.cookies.get('uid')
-    if not uid:
-        uid = uuid.uuid4().hex[:8]
-        resp.set_cookie("uid", uid, max_age=600, path='/rest', secure=False, http_only=False)
-    params['uid'] = uid
+"""
+### API接口
 
+按falcon的设计模式，每条url规则对应一个[资源]
 
-@falcon.before(check_or_set_uid)
-class Resource(object):
-    def __init__(self, redis_client):
-        self.redis = redis_client
+* /api/start/{game_id}  - [开始游戏]
+* /api/end/{game_id}
+* /api/answer/{game_id}/{question_id}
 
-    def on_post(self, req, resp, game_id, uid):
-        return json.dumps({
-            'message': 'Game %s for user %s started' % (game_id, uid),
-        })
-
+[资源]: resources.html
+[开始游戏]: resources.html#Start
+"""
+r = redis.StrictRedis()
 
 api = falcon.API()
-api.add_route('/api/start_game/{game_id}', Resource())
+api.add_route('/api/start/{game_id}', Start(r))

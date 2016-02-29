@@ -8,5 +8,7 @@ alembic
 records
 pycco
 testtools
+nose
+fakeredis
 gevent
 uwsgi
