@@ -29,6 +29,7 @@ class Start(object):
         if not userinfo and not uid:
             resp.body = json.dumps({'run_id': self._new_run_id()})
             return
+        print(userinfo)
         if not uid:
             # 未分配uid时，客户端会根据用户填写字段用hash函数生成一个32位整数作为备选的uid
             _hash = req.get_param_as_int('hash', required=True)
@@ -54,7 +55,7 @@ class Start(object):
             if not saved:
                 uid = _hash
                 self.redis.hset('game:%s:userinfo' % game_id, uid, userinfo)
-            if saved == userinfo:
+            elif saved.decode('utf-8') == userinfo:
                 uid = _hash
             _hash += 1
         return uid
