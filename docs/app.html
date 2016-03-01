@@ -17,13 +17,7 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
-      <h3>API接口</h3>
-<p>按falcon的设计模式，每条url规则对应一个<a href="resources.html">资源</a></p>
-<ul>
-<li>/api/start/{game_id}  - <a href="resources.html#Start">开始游戏</a></li>
-<li>/api/end/{game_id}</li>
-<li>/api/answer/{game_id}/{question_id}</li>
-</ul>
+      
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">falcon</span>
@@ -37,12 +31,31 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      
+      <h3>初始化redis客户端</h3>
+<p>当decode_responses参数为True时redis-py会自动将redis返回的字符菜转换为unicode。
+默认不这么做的原因是：如果需要转换结果为数字，先转换为unicode就造成了额外花销。
+节点本身不会从redis读取大量数字，但在归档数据时可能需要注意。</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">StrictRedis</span><span class="p">()</span>
-
-<span class="n">api</span> <span class="o">=</span> <span class="n">falcon</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
+      <div class="highlight"><pre><span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">StrictRedis</span><span class="p">(</span><span class="n">decode_responses</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <h3>API接口</h3>
+<p>按falcon的设计模式，每条url规则对应一个<a href="resources.html">资源</a></p>
+<ul>
+<li>/api/start/{game_id}  - <a href="resources.html#Start">开始游戏</a></li>
+<li>/api/end/{game_id}</li>
+<li>/api/answer/{game_id}/{question_id}</li>
+</ul>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">api</span> <span class="o">=</span> <span class="n">falcon</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
 <span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/start/{game_id}&#39;</span><span class="p">,</span> <span class="n">Start</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
 
 </pre></div>
