@@ -99,6 +99,8 @@ class TestEnd(testing.TestBase):
     # noinspection PyAttributeOutsideInit
     def before(self):
         self.redis = FakeStrictRedis()
+        self.redis.zadd('game:1:scores', 100, 100)
+        self.redis.zadd('game:1:scores', 110, 110)
         self.resource = End(self.redis)
         self.api.add_route('/end/{game_id}', self.resource)
 
@@ -114,7 +116,58 @@ class TestEnd(testing.TestBase):
         self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('rank', data, 'rank has been set')
-        self.assertEquals(0, data['rank'], 'rank should be 0')
+        self.assertNotIn('best_score', data, 'no best_score')
+        self.assertNotIn('best_rank', data, 'no best_rank')
+        self.assertEquals(1, data['rank'], 'rank should be 1')
+
+    def test_with_uid(self):
+        _run_id = 'some_random_thing'
+        _score = 105
+        _uid = 15
+        query_string = urlencode({'run_id': _run_id, 'score': _score, 'uid': _uid})
+        body = self.simulate_request('/end/1', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('rank', data, 'rank has been set')
+        self.assertIn('best_score', data, 'best_score has been set')
+        self.assertIn('best_rank', data, 'best_rank has been set')
+        self.assertEquals(1, data['rank'], 'rank should be 1')
+        self.assertEquals(_score, data['best_score'], 'score should be set as best score')
+        self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
+
+    def test_update_best_records(self):
+        _run_id = 'some_random_thing'
+        _score = 105
+        _uid = 15
+        query_string = urlencode({'run_id': _run_id, 'score': _score, 'uid': _uid})
+        self.redis.hset('game:1:record:scores', _uid, 100)
+        self.redis.hset('game:1:record:ranks', _uid, 2)
+        body = self.simulate_request('/end/1', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('rank', data, 'rank has been set')
+        self.assertIn('best_score', data, 'best_score has been set')
+        self.assertIn('best_rank', data, 'best_rank has been set')
+        self.assertEquals(1, data['rank'], 'rank should be 1')
+        self.assertEquals(_score, data['best_score'], 'score should be set as best score')
+        self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
+
+    def test_oot_update(self):
+        _run_id = 'some_random_thing'
+        _score = 105
+        _uid = 15
+        query_string = urlencode({'run_id': _run_id, 'score': _score, 'uid': _uid})
+        self.redis.hset('game:1:record:scores', _uid, 150)
+        self.redis.hset('game:1:record:ranks', _uid, 0)
+        body = self.simulate_request('/end/1', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('rank', data, 'rank has been set')
+        self.assertIn('best_score', data, 'best_score has been set')
+        self.assertIn('best_rank', data, 'best_rank has been set')
+        self.assertEquals(1, data['rank'], 'rank should be 1')
+        self.assertEquals(150, data['best_score'], 'score should be 150')
+        self.assertEquals(0, data['best_rank'], 'best_rank should be 0')
 
 
 class TestExtractRunningInfoHook(testing.TestBase):

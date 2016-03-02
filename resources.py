@@ -91,13 +91,23 @@ class End(object):
 
         # 如果uid不为None，需要更新用户最佳成绩
         if uid:
-            p.get('game:%s:user:%s:best:score' % (game_id, uid))
-            p.get('game:%s:user:%s:best:rank' % (game_id, uid))
+            p.hget('game:%s:record:scores' % game_id, uid)
+            p.hget('game:%s:record:ranks' % game_id, uid)
 
         result = p.execute()
         data = {'rank': result[1]}
 
         if uid:
-            pass
+            # convert to int if not None
+            best_score, best_rank = map(lambda i: int(i) if i else i, result[2:4])
+            # update best score and rank
+            if best_score is None or score > best_score:
+                best_score = score
+                p.hset('game:%s:record:scores' % game_id, uid, best_score)
+            if best_rank is None or data['rank'] < best_rank:
+                best_rank = data['rank']
+                p.hset('game:%s:record:ranks' % game_id, uid, best_rank)
+            data.update({'best_score': best_score, 'best_rank': best_rank})
+            p.execute()
 
         resp.body = json.dumps(data)
