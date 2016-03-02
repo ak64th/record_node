@@ -93,7 +93,7 @@ class TestStart(testing.TestBase):
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
 
 
-class TestExtractRunningInfoHooks(testing.TestBase):
+class TestExtractRunningInfoHook(testing.TestBase):
     # noinspection PyAttributeOutsideInit
     def before(self):
         validate_resource = falcon.before(extract_running_info)(testing.TestResource)
