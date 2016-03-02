@@ -5,7 +5,8 @@ import falcon
 import falcon.testing as testing
 from fakeredis import FakeStrictRedis
 import simplejson as json
-from resources import Start
+# ###测试以下的模块
+from resources import Start, End
 from hooks import extract_running_info
 
 
@@ -91,6 +92,29 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
+
+
+# noinspection PyArgumentList
+class TestEnd(testing.TestBase):
+    # noinspection PyAttributeOutsideInit
+    def before(self):
+        self.redis = FakeStrictRedis()
+        self.resource = End(self.redis)
+        self.api.add_route('/end/{game_id}', self.resource)
+
+    def after(self):
+        self.redis.flushall()
+        del self.redis
+
+    def test_without_uid(self):
+        _run_id = 'some_random_thing'
+        _score = 105
+        query_string = urlencode({'run_id': _run_id, 'score': _score})
+        body = self.simulate_request('/end/1', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('rank', data, 'rank has been set')
+        self.assertEquals(0, data['rank'], 'rank should be 0')
 
 
 class TestExtractRunningInfoHook(testing.TestBase):

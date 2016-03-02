@@ -1,6 +1,9 @@
 # coding=utf-8
 import uuid
+
 import simplejson as json
+import falcon
+import hooks
 
 
 class Start(object):
@@ -58,3 +61,43 @@ class Start(object):
                 uid = _hash
             _hash += 1
         return uid
+
+
+@falcon.before(hooks.extract_running_info)
+class End(object):
+    """
+    ###<a name="Start">结束游戏</a>
+    将用户的uid，run_id和最终成绩保存到redis上，并更新该用户的最佳成绩
+    """
+    def __init__(self, redis):
+        self.redis = redis
+
+    def on_post(self, req, resp, game_id, uid, run_id):
+        """客户端结束游戏时请求这个接口
+        利用redis的sorted list维护成绩榜单,并为每个用户记录最佳成绩和最佳排名
+
+        可能的请求参数有
+
+        - score -- 用户得分
+        """
+        score = req.get_param_as_int('score', required=True)
+
+        p = self.redis.pipeline()
+        # redis的sorted set在分值相同时按照key的字母顺序排列
+        # 为了能够得到并列的排名，维护一个key和score都是得分的sorted set
+        p.zadd('game:%s:scores' % game_id, score, score)
+        # 获取该分数的当前排名
+        p.zrevrank('game:%s:scores' % game_id, score)
+
+        # 如果uid不为None，需要更新用户最佳成绩
+        if uid:
+            p.get('game:%s:user:%s:best:score' % (game_id, uid))
+            p.get('game:%s:user:%s:best:rank' % (game_id, uid))
+
+        result = p.execute()
+        data = {'rank': result[1]}
+
+        if uid:
+            pass
+
+        resp.body = json.dumps(data)
