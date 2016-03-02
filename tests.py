@@ -2,12 +2,11 @@
 from urllib import urlencode
 
 import falcon
-
 import falcon.testing as testing
 from fakeredis import FakeStrictRedis
 import simplejson as json
 from resources import Start
-
+from hooks import extract_running_info
 
 
 # noinspection PyArgumentList
@@ -92,3 +91,40 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
+
+
+class TestExtractRunningInfoHooks(testing.TestBase):
+    # noinspection PyAttributeOutsideInit
+    def before(self):
+        validate_resource = falcon.before(extract_running_info)(testing.TestResource)
+        self.resource = validate_resource()
+        self.api.add_route(self.test_route, self.resource)
+
+    def test_with_only_run_id(self):
+        _run_id = 'some_random_thing'
+        query_string = urlencode({'run_id': _run_id})
+        self.simulate_request(self.test_route, query_string=query_string)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        self.assertIn('run_id', self.resource.kwargs)
+        self.assertIn('uid', self.resource.kwargs)
+        self.assertEquals(_run_id, self.resource.kwargs['run_id'])
+        self.assertIsNone(self.resource.kwargs['uid'])
+
+    def test_with_run_id_and_uid(self):
+        _uid = 105
+        _run_id = 'some_random_thing'
+        query_string = urlencode({'run_id': _run_id, 'uid': _uid})
+        self.simulate_request(self.test_route, query_string=query_string)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        self.assertIn('run_id', self.resource.kwargs)
+        self.assertIn('uid', self.resource.kwargs)
+        self.assertEquals(_run_id, self.resource.kwargs['run_id'])
+        self.assertEquals(_uid, self.resource.kwargs['uid'])
+
+    def test_without_run_id(self):
+        _uid = 105
+        query_string = urlencode({'uid': _uid})
+        body = self.simulate_request(self.test_route, query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_400, self.srmock.status)
+        data = json.loads(body)
+        self.assertEquals('Missing parameter', data['title'])
