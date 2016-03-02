@@ -24,7 +24,7 @@ class TestStart(testing.TestBase):
 
     def test_without_userinfo(self):
         body = self.simulate_request('/start/1', decode='utf-8', method='POST')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
         self.assertIsNone(self.redis.hget('game:1:run', data['run_id']), 'redis hash should be empty')
@@ -33,7 +33,7 @@ class TestStart(testing.TestBase):
         _uid = 25
         querystring = urlencode({'uid': _uid, 'userinfo': 'nothing', 'hash': '1234'})
         body = self.simulate_request('/start/1', method='POST', query_string=querystring, decode='utf-8')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
         self.assertIn('uid', data, 'uid has been set')
@@ -45,7 +45,7 @@ class TestStart(testing.TestBase):
     def test_with_userinfo_only(self):
         querystring = urlencode({'userinfo': json.dumps({'a': '1', 'b': '2'})})
         body = self.simulate_request('/start/1', method='POST', query_string=querystring, decode='utf-8')
-        self.assertEqual(self.srmock.status, falcon.HTTP_400)
+        self.assertEquals(falcon.HTTP_400, self.srmock.status)
         data = json.loads(body)
         self.assertEquals('Missing parameter', data['title'])
 
@@ -54,7 +54,7 @@ class TestStart(testing.TestBase):
         _userinfo = json.dumps({'field1': u'王思聪', 'field2': '15888888888'})
         querystring = urlencode({'userinfo': _userinfo, 'hash': _hash})
         body = self.simulate_request('/start/1', method='POST', query_string=querystring, decode='utf-8')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
         self.assertIn('uid', data, 'uid has been set')
@@ -69,7 +69,7 @@ class TestStart(testing.TestBase):
         querystring = urlencode({'userinfo': _userinfo, 'hash': _hash})
         self.redis.hset('game:1:userinfo', _hash, 'something different')
         body = self.simulate_request('/start/1', method='POST', query_string=querystring, decode='utf-8')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
         self.assertIn('uid', data, 'uid has been set')
@@ -84,7 +84,7 @@ class TestStart(testing.TestBase):
         querystring = urlencode({'userinfo': _userinfo, 'hash': _hash})
         self.redis.hset('game:1:userinfo', _hash, _userinfo)
         body = self.simulate_request('/start/1', method='POST', query_string=querystring, decode='utf-8')
-        self.assertEqual(self.srmock.status, falcon.HTTP_200)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
         self.assertIn('uid', data, 'uid has been set')
