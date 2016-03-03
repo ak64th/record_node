@@ -66,7 +66,7 @@ class Start(object):
 @falcon.before(hooks.extract_running_info)
 class End(object):
     """
-    ###<a name="Start">结束游戏</a>
+    ###<a name="End">结束游戏</a>
     将用户的uid，run_id和最终成绩保存到redis上，并更新该用户的最佳成绩
     """
     def __init__(self, redis):
@@ -111,3 +111,21 @@ class End(object):
             p.execute()
 
         resp.body = json.dumps(data)
+
+
+@falcon.before(hooks.extract_running_info)
+class Answer(object):
+    """
+    ###<a name="Answer">记录答题选择</a>
+    将用户的uid，run_id和最终成绩保存到redis上，并更新该用户的最佳成绩
+    """
+    def __init__(self, db):
+        self.db = db
+
+    def on_post(self, req, resp, game_id, question_id, uid, run_id):
+        """客户端在用户每次答题时将选择发送到这个借口
+        可能的请求参数有
+
+        - selected -- 用户选择的选项id号，整数
+        """
+        pass
