@@ -5,6 +5,8 @@ import simplejson as json
 import falcon
 import hooks
 
+from models import records
+
 
 class Start(object):
     """
@@ -124,8 +126,24 @@ class Answer(object):
 
     def on_post(self, req, resp, game_id, question_id, uid, run_id):
         """客户端在用户每次答题时将选择发送到这个借口
+        客户端不应该等待这个接口回复
+
         可能的请求参数有
 
         - selected -- 用户选择的选项id号，整数
+        - correct -- 是否正确，会被转化为bool类型。不发送表示错误，空白表示正确。也可以用'true'和'false'明确指定
         """
-        pass
+        selected = req.get_param_as_int('selected', required=True)
+        correct = req.get_param_as_bool('correct', blank_as_true=True) or False
+        with self.db.connect() as connection:
+            sql = records.insert().values(
+                uid=uid,
+                run=run_id,
+                game=game_id,
+                question=question_id,
+                selected=selected,
+                correct=correct,
+            )
+            result = connection.execute(sql)
+            resp.body = result.inserted_primary_key
+
