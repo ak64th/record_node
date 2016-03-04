@@ -182,14 +182,74 @@ class TestEnd(testing.TestBase):
 class TestAnswer(testing.TestBase):
     # noinspection PyAttributeOutsideInit
     def before(self):
-        self.db = create_engine('sqlite://', echo=True)
+        self.db = create_engine('sqlite://')
         metadata.create_all(self.db)
         self.resource = Answer(self.db)
         self.api.add_route('/answer/{game_id}/{question_id}', self.resource)
 
+        # test data
+        self.test_run_id = self.getUniqueString('run_id')
+        self.test_score = self.getUniqueInteger()
+        self.test_uid = self.getUniqueInteger()
+        self.test_selected = self.getUniqueInteger()
+
     def after(self):
         self.db.dispose()
         del self.db
+
+    def test_with_correct_answer(self):
+        query_string = urlencode({
+            'run_id': self.test_run_id,
+            'uid': self.test_uid,
+            'selected': self.test_selected,
+            'correct': 'true'
+        })
+        body = self.simulate_request('/answer/1/12 ', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('inserted', data, 'return inserted id')
+        self.assertEquals([1], data['inserted'])
+        row = self.db.execute(records.select()).fetchone()
+        self.assertIn(row['id'], data['inserted'])
+        self.assertEquals(1, row['game'])
+        self.assertEquals(12, row['question'])
+        self.assertEquals(self.test_run_id, row['run'])
+        self.assertEquals(self.test_uid, row['uid'])
+        self.assertEquals(self.test_selected, row['selected'])
+        self.assertTrue(row['correct'])
+
+    def test_with_no_correction(self):
+        query_string = urlencode({
+            'run_id': self.test_run_id,
+            'uid': self.test_uid,
+            'selected': self.test_selected,
+        })
+        body = self.simulate_request('/answer/1/12 ', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
+        data = json.loads(body)
+        self.assertIn('inserted', data, 'return inserted id')
+        self.assertEquals([1], data['inserted'])
+        row = self.db.execute(records.select()).fetchone()
+        self.assertIn(row['id'], data['inserted'])
+        self.assertEquals(1, row['game'])
+        self.assertEquals(12, row['question'])
+        self.assertEquals(self.test_run_id, row['run'])
+        self.assertEquals(self.test_uid, row['uid'])
+        self.assertEquals(self.test_selected, row['selected'])
+        self.assertFalse(row['correct'])
+
+    def test_with_no_selected(self):
+        query_string = urlencode({
+            'run_id': self.test_run_id,
+            'uid': self.test_uid,
+            'correct': 'true'
+        })
+        body = self.simulate_request('/answer/1/12 ', method='POST', query_string=query_string, decode='utf-8')
+        self.assertEquals(falcon.HTTP_400, self.srmock.status)
+        data = json.loads(body)
+        self.assertEquals('Missing parameter', data['title'])
+        row = self.db.execute(records.select()).fetchone()
+        self.assertIsNone(row, 'no data was inserted')
 
 
 class TestExtractRunningInfoHook(testing.TestBase):

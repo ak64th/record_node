@@ -27,6 +27,11 @@ class Start(object):
         - userinfo -- 用户填写的信息
         - uid -- 客户端保存的uid，是一个32位整数
         - hash -- 客户端根据用户信息生成的hash值，是一个32位整数
+
+        返回
+
+        - run_id -- 分配的run_id
+        - uid -- 分配的uid，需要填写字段时才会返回
         """
         userinfo = req.get_param('userinfo', default=None)
         uid = req.get_param_as_int('uid')
@@ -81,6 +86,12 @@ class End(object):
         可能的请求参数有
 
         - score -- 用户得分
+
+        返回
+
+        - rank -- 本次得分的排名
+        - best_score -- 曾经取得的最好得分，uid不为None时才会返回
+        - best_rank -- 曾经取得的最好名次，uid不为None时才会返回
         """
         score = req.get_param_as_int('score', required=True)
 
@@ -133,10 +144,15 @@ class Answer(object):
         可能的请求参数有
 
         - selected -- 用户选择的选项id号，整数
-        - correct -- 是否正确，会被转化为bool类型。不发送表示错误，空白表示正确。也可以用'true'和'false'明确指定
+        - correct -- 是否正确，会被转化为bool类型。空白或不发送表示错误，也可以用'true'和'false'明确指定
+
+        返回
+
+        - inserted -- 一个数组，包含了插入记录的id
         """
         selected = req.get_param_as_int('selected', required=True)
-        correct = req.get_param_as_bool('correct', blank_as_true=True) or False
+        correct = req.get_param_as_bool('correct') or False
+        print(correct)
         with self.db.connect() as connection:
             sql = records.insert().values(
                 uid=uid,
@@ -147,5 +163,4 @@ class Answer(object):
                 correct=correct,
             )
             result = connection.execute(sql)
-            resp.body = result.inserted_primary_key
-
+        resp.body = json.dumps({'inserted': result.inserted_primary_key})
