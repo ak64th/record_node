@@ -5,9 +5,13 @@ import falcon
 import falcon.testing as testing
 from fakeredis import FakeStrictRedis
 import simplejson as json
+import sqlalchemy.event
+
+from models import records, metadata
 # ###测试以下的模块
-from resources import Start, End
+from resources import Start, End, Answer
 from hooks import extract_running_info
+from db import create_engine, set_sqlite_pragma, dbapi2
 
 
 # noinspection PyArgumentList
@@ -170,6 +174,19 @@ class TestEnd(testing.TestBase):
         self.assertEquals(0, data['best_rank'], 'best_rank should be 0')
 
 
+# noinspection PyArgumentList
+class TestAnswer(testing.TestBase):
+    # noinspection PyAttributeOutsideInit
+    def before(self):
+        self.db = create_engine('sqlite://', echo=True)
+        self.resource = Answer(self.db)
+        self.api.add_route('/answer/{game_id}/{question_id}', self.resource)
+
+    def after(self):
+        self.db.dispose()
+        del self.db
+
+
 class TestExtractRunningInfoHook(testing.TestBase):
     # noinspection PyAttributeOutsideInit
     def before(self):
@@ -205,3 +222,15 @@ class TestExtractRunningInfoHook(testing.TestBase):
         self.assertEquals(falcon.HTTP_400, self.srmock.status)
         data = json.loads(body)
         self.assertEquals('Missing parameter', data['title'])
+
+
+class TestCreateDBEngine(testing.TestBase):
+    def test_set_pragma(self):
+        db = create_engine('sqlite://')
+        db.connect()
+        is_listening = sqlalchemy.event.contains(db, 'connect', set_sqlite_pragma)
+        if dbapi2.sqlite_version_info > (3, 7, 0):
+            self.assertTrue(is_listening)
+        else:
+            self.expectFailure("turn on pragma with sqlite version <= 3.7.0",
+                               self.assertTrue, is_listening)

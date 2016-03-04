@@ -23,7 +23,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 def create_engine(url, **kwargs):
     engine = sqlalchemy.create_engine(url, module=dbapi2, **kwargs)
     # 只在sqlite3.7以上版本时开启WAL模式
-    if dbapi2.sqlite_version_info[1] >= 7:
+    if dbapi2.sqlite_version_info >= (3, 7, 0):
         event.listen(engine, 'connect', set_sqlite_pragma)
     return engine
-
