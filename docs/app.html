@@ -22,7 +22,9 @@
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">falcon</span>
 <span class="kn">import</span> <span class="nn">redis</span>
-<span class="kn">from</span> <span class="nn">resources</span> <span class="kn">import</span> <span class="n">Start</span></pre></div>
+<span class="kn">from</span> <span class="nn">resources</span> <span class="kn">import</span> <span class="n">Start</span><span class="p">,</span> <span class="n">End</span><span class="p">,</span> <span class="n">Answer</span>
+<span class="kn">from</span> <span class="nn">db</span> <span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">models</span> <span class="kn">import</span> <span class="n">metadata</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -46,17 +48,43 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-2'>#</a>
       </div>
+      <h3>初始化数据库</h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">db</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="s1">&#39;sqlite:///records.db&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>程序在创建表格之前会检测是否存在</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
       <h3>API接口</h3>
 <p>按falcon的设计模式，每条url规则对应一个<a href="resources.html">资源</a></p>
 <ul>
-<li>/api/start/{game_id}  - <a href="resources.html#Start">开始游戏</a></li>
-<li>/api/end/{game_id}</li>
-<li>/api/answer/{game_id}/{question_id}</li>
+<li>/api/start/{game_id} - <a href="resources.html#Start">开始游戏</a></li>
+<li>/api/end/{game_id} - <a href="resources.html#End">结束游戏</a></li>
+<li>/api/answer/{game_id}/{question_id} - <a href="resources.html#Answer">记录答题选择</a></li>
 </ul>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="n">api</span> <span class="o">=</span> <span class="n">falcon</span><span class="o">.</span><span class="n">API</span><span class="p">()</span>
 <span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/start/{game_id}&#39;</span><span class="p">,</span> <span class="n">Start</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+<span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/end/{game_id}&#39;</span><span class="p">,</span> <span class="n">End</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+<span class="n">api</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s1">&#39;/api/answer/{game_id}/{question_id}&#39;</span><span class="p">,</span> <span class="n">Answer</span><span class="p">(</span><span class="n">db</span><span class="p">))</span>
 
 </pre></div>
     </div>
