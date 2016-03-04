@@ -123,6 +123,7 @@ class TestEnd(testing.TestBase):
         self.assertNotIn('best_score', data, 'no best_score')
         self.assertNotIn('best_rank', data, 'no best_rank')
         self.assertEquals(1, data['rank'], 'rank should be 1')
+        self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
 
     def test_with_uid(self):
         _run_id = 'some_random_thing'
@@ -138,6 +139,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(1, data['rank'], 'rank should be 1')
         self.assertEquals(_score, data['best_score'], 'score should be set as best score')
         self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
+        self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
 
     def test_update_best_records(self):
         _run_id = 'some_random_thing'
@@ -155,6 +157,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(1, data['rank'], 'rank should be 1')
         self.assertEquals(_score, data['best_score'], 'score should be set as best score')
         self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
+        self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
 
     def test_oot_update(self):
         _run_id = 'some_random_thing'
@@ -172,6 +175,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(1, data['rank'], 'rank should be 1')
         self.assertEquals(150, data['best_score'], 'score should be 150')
         self.assertEquals(0, data['best_rank'], 'best_rank should be 0')
+        self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
 
 
 # noinspection PyArgumentList
@@ -179,6 +183,7 @@ class TestAnswer(testing.TestBase):
     # noinspection PyAttributeOutsideInit
     def before(self):
         self.db = create_engine('sqlite://', echo=True)
+        metadata.create_all(self.db)
         self.resource = Answer(self.db)
         self.api.add_route('/answer/{game_id}/{question_id}', self.resource)
 

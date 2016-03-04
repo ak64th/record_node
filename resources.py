@@ -96,6 +96,8 @@ class End(object):
             p.hget('game:%s:record:scores' % game_id, uid)
             p.hget('game:%s:record:ranks' % game_id, uid)
 
+        p.hset('game:%s:final' % game_id, run_id, score)
+
         result = p.execute()
         data = {'rank': result[1]}
 
@@ -119,7 +121,7 @@ class End(object):
 class Answer(object):
     """
     ###<a name="Answer">记录答题选择</a>
-    将用户的uid，run_id和最终成绩保存到redis上，并更新该用户的最佳成绩
+    保存用户答题过程
     """
     def __init__(self, db):
         self.db = db
