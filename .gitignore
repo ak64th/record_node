@@ -10,4 +10,3 @@ env/
 *.bak
 *.conf
 *.ini
-/public/.webassets-cache
