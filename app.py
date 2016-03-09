@@ -14,7 +14,7 @@ r = redis.StrictRedis(decode_responses=True)
 # ###初始化数据库
 db = create_engine('sqlite:///records.db')
 # 程序在创建表格之前会检测是否存在
-metadata.create_all(metadata)
+metadata.create_all(db)
 
 """
 ### API接口
