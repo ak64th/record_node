@@ -1,0 +1,298 @@
+/* CSS Mobile Reset */
+html, body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+h1, h2, h3, h4, h5, h6{ font-weight: normal; }
+img { border: 0; max-width: 100%; }
+a{text-decoration: none;}
+
+.button {
+  width: 6.5rem;
+  height: 2rem;
+  line-height: 2rem;
+  text-align: center;
+  display: block;
+  font-size: 1rem;
+  color: #FFF;
+  margin: 1rem auto;
+  border: 0px;
+}
+
+html {
+  font-size: 20px;font-size: 6vw;
+  background: url('../image/bg.jpg') no-repeat center center fixed;
+  background-size: 100% 100%;
+}
+.reject {
+  margin: 5rem auto 0;
+  width: 9rem;
+  font-size: 0.6rem;
+  text-align: center;
+  padding-top: 10rem;
+}
+.reject .emotion {
+  display: block;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  height: 15rem;
+  position: absolute;
+  width: 9rem;
+  top: 5rem;
+  z-index: -1;
+}
+.reject .emotion_cry{
+  background-image: url("../image/reject_cry.png");
+}
+.reject .emotion_laugh{
+  background-image: url("../image/reject_laugh.png");
+}
+.welcome {
+  width: 14rem;
+  margin: 0px auto;
+  font-size: 0.75rem;
+}
+.welcome .intro {
+  height: 6rem;
+  background-color: #FFF;
+  font-size: 0.6rem;
+  padding: 0.625rem;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.welcome .intro p:first-child {
+  margin-top: 0px;
+}
+.welcome .banner {
+  background: transparent url("../image/introduction.png") no-repeat;
+  background-size: 14rem;
+  width: 14rem;
+  height: 4rem;
+  display: block;
+  margin: 0.5rem auto;
+}
+.welcome .info > h3 {
+  margin: 0.5rem 0 0;
+  color: #FFF;
+}
+.welcome .info > input {
+  height: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0px none;
+  margin-top: 0.5rem;
+}
+.welcome .submit {
+  background: url("../image/button_red.png") no-repeat;
+  background-size: contain;
+}
+.quiz::before, .rank::before {
+  content: '';
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  display: block;
+  background: white repeat;
+  z-index: -5;
+}
+.quiz .panel {
+  height: 6rem;
+  width: 100%;
+  background: url("../image/header.png") no-repeat;
+  background-size: 100% 100%;
+  margin-bottom: 1rem;
+}
+.quiz .timer {
+  position: absolute;
+  width: 7rem;
+  top: 1rem;
+  left: 4.5rem;
+}
+.quiz .remaining {
+  width: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: #FFF;
+  float: left;
+  color: #DD4B4B;
+  font-size: 0.6rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.5rem 0px;
+}
+.quiz .clock {
+  background: transparent url("../image/glass.png") no-repeat;
+  background-size: contain;
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  position: absolute;
+  top: 0.5rem;
+  left: 3.5rem;
+}
+.quiz .grade {
+  text-align: center;
+}
+.quiz .panel .grade .tag:not(:first-child){
+  background-color: #FFF;
+  color: #DD4B4B;
+  border-radius: 0.3rem;
+  text-align: center;
+  position: absolute;
+  box-sizing: border-box;
+  width: 3rem;
+  left: 6.5rem;
+  top: 3rem;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+  font-size: 0.6rem;
+}
+.quiz .panel .grade .tag:first-child{
+  position: absolute;
+  top: 4.7rem;
+  left: 4.7rem;
+  height: 1.875rem;
+  width: 6.75rem;
+  color: #FFF;
+  font-size: 0.65rem;
+  text-align: center;
+  line-height: 1.4rem;
+  background: transparent url("../image/banner.png") no-repeat;
+  background-size: 100%;
+  z-index: 1;
+}
+.question .content {
+  border: 1px solid #D1D0CF;
+  width: 13.5rem;
+  padding: 0.5rem;
+  font-size: 0.7rem;
+  margin: 0px auto;
+  color: #DD4B4B;
+}
+.question .option_list {
+  width: 13.5rem;
+  padding: 0.5rem;
+  margin: 0px auto;
+  font-size: 0.7rem;
+}
+.question .question_option {
+  margin: 0.3rem 0;
+}
+.question .question_option input[type='radio'],
+.question .question_option input[type='checkbox']:empty {
+  visibility: hidden;
+}
+.question .question_option input[type='radio'] + label,
+.question .question_option input[type='checkbox'] + label {
+  position: relative;
+  float: left;
+  cursor: pointer;
+  text-indent: 0.6rem;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.question .question_option input[type='radio'] + label:before,
+.question .question_option input[type='checkbox'] + label:before {
+  position: absolute;
+  display: block;
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  top: 0.25rem;
+  left: -0.25rem;
+  background: #333;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.5) inset;
+}
+.question .question_option input[type='radio'] + label:before{
+  border-radius: 100%;
+}
+.question .question_option input[type='radio']:checked + label:before,
+.question .question_option input[type='checkbox']:checked + label:before {
+  background: #3C3 repeat;
+}
+.question .submit {
+  display: block;
+  width: 6rem;
+  height: 2rem;
+  line-height: 1.75rem;
+  font-size: 0.85rem;
+  color: #FFF;
+  font-weight: bold;
+  text-align: center;
+  margin: 1rem auto;
+  background: url("../image/button_yellow.png") no-repeat;
+  background-size: 100%;
+}
+.rank {
+  font-size: 0.6rem;
+}
+.rank .share {
+  display: block;
+  width: 100%;
+  height: 8rem;
+  background: transparent url("../image/share.png") no-repeat;
+  background-size: contain;
+}
+.rank .banner {
+  display: none;
+}
+.rank .message {
+  width: 14rem;
+  margin: 1rem auto 0;
+  font-size: 0.6rem;
+}
+.rank .submit {
+  background: url("../image/button_yellow.png") no-repeat;
+  background-size: contain;
+}
+.modal .overlay {
+  content: '';
+  position:fixed;
+  top: 0;
+  background-color: #000;
+  opacity: 0.8;
+  width: 100%;
+  height: 100%;
+}
+.modal .dialogue {
+  box-sizing: border-box;
+  padding: 0.5rem 1rem 2rem;
+  width: 12rem;
+  background: #FFF url('../image/footer.png') no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+          transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+}
+.modal .emotion {
+  box-sizing: border-box;
+  position: absolute;
+  left: 0rem;
+  top: -7.5rem;
+  width: 12rem;
+  height: 8rem;
+  background: transparent url("../image/title.png") no-repeat;
+  background-size: 100%;
+}
+.modal .dialogue .submit {
+  background-color: #FF5C5C;
+  background-size: contain;
+  line-height: 2rem;
+  width: 6.5rem;
+  height: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0.75rem auto 0.3rem;
+  color: #FFF;
+  border-radius: 1rem;
+}

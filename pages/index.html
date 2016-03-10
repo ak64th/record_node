@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>一战到底</title>
+</head>
+
+<body>
+  <div id="app_container">
+  </div>
+  <script type="text/template" id="tpl_too_early">
+    <section class="reject">
+      亲，本次活动未开始，
+      <br/> 活动很精彩，敬请期待哦~~
+      <br/>
+      <i class='emotion emotion_laugh' />
+    </section>
+  </script>
+  <script type="text/template" id="tpl_too_late">
+    <section class="reject">
+      亲，本次活动已结束，
+      <br/> 下次要记得赶早哦~~~
+      <br/>
+      <i class='emotion emotion_cry' />
+    </section>
+  </script>
+  <script type="text/template" id="tpl_no_more_chance">
+    <section class="reject">
+      亲，您的答题次数已经用完，
+      <br/> 下次活动再努力哦~~~
+      <br/>
+      <i class='emotion emotion_cry' />
+    </section>
+  </script>
+  <script type='text/template' id='tpl_welcome'>
+    <i class='banner' />
+    <section class='intro'>
+      <%= content %>
+    </section>
+    <% if (!_.isEmpty(infoFields) ){ %>
+      <section class="info">
+        <h3>请完整填写以下资料：</h3>
+        <% _.each(infoFields, function(field){
+            var field_key = field[0];
+            var field_text = field[1];
+            saved = localStorage.getItem(field_key) || ''; %>
+          <input placeholder="<%= field_text %>" name="<%= field_key %>" value="<%= saved %>">
+          <% }) %>
+      </section>
+      <% } %>
+        <input type="submit" class="submit button" value="开始游戏">
+  </script>
+  <script type="text/template" id="tpl_quiz">
+    <section class="panel">
+      <% if (timeLimit) { %>
+        <section class='timer'>
+          <i class="clock" />
+          <span class="remaining" id="timer"></span>
+        </section>
+        <% } %>
+          <section class="grade">
+            <span class="tag">第<span id="count">0</span>题</span>
+            <span class="tag"><span id="points">0</span>分</span>
+          </section>
+          </div>
+  </script>
+  <script type="text/template" id="tpl_question">
+    <div class="content">
+      <%= content %>
+    </div>
+    <div class="option_list"></div>
+    <input type="submit" class="submit button" value="提交">
+  </script>
+  <script type="text/template" id="tpl_option_single">
+    <input type='radio' id='option_<%= id %>' name='question_option'>
+    <label for='option_<%= id %>'>
+      <%= code %>.
+        <%= content %>
+    </label>
+  </script>
+  <script type="text/template" id="tpl_option_multi">
+    <input type='checkbox' id='option-<%= id %>' name='question_option'>
+    <label for='option-<%= id %>'>
+      <%= code %>.
+        <%= content %>
+    </label>
+  </script>
+  <script type="text/template" id="tpl_rank">
+    <i class="share" />
+    <section class="message">
+      <i class='banner' /> 这一局中我获得了
+      <span class="redWords"><%=points%></span>分，当前排名第<span class="redWords"><%=rank+1%></span>名，我的最好成绩 是
+      <span class="redWords"><%=bestPoints%></span>分，最好排名是第<span class="redWords"><%=bestRank+1%></span>名。
+      <p>还想获得更高成绩，那就再来挑战一局吧！</p>
+      <input type="submit" class="submit button" value="再来一局">
+    </section>
+  </script>
+  <script type="text/template" id="tpl_modal">
+    <div class="overlay"></div>
+    <div class="dialogue">
+      <i class="emotion <% if (typeof emotion !== 'undefined'){ print('emotion_' + emotion); } %>" />
+      <%= message %>
+        <button class="submit button <%= button.class %>">
+          <%= button.text %>
+        </button>
+    </div>
+  </script>
+  <script type="text/javascript" src="/bower_components/jquery/dist/jquery.js"></script>
+  <script type="text/javascript" src="/bower_components/underscore/underscore.js"></script>
+  <script type="text/javascript" src="/bower_components/backbone/backbone.js"></script>
+  <script type="text/javascript" src="/js/packed.js"></script>
+  <script>
+    var application = null;
+    var game_code = window.location.hash.slice(1);
+    var data_url_root = '/data/' + game_code + '/';
+    $.getJSON(data_url_root + 'config.json').then(function(data) {
+      application = new app.ApplicationView({
+        game_code: game_code,
+        config: data
+      });
+      application.loadStyle();
+      application.run();
+    });
+  </script>
+</body>
+
+</html>
