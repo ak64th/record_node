@@ -26,7 +26,7 @@
     <span class="kn">from</span> <span class="nn">sqlite3</span> <span class="kn">import</span> <span class="n">dbapi2</span>
 
 <span class="kn">import</span> <span class="nn">sqlalchemy</span>
-<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span></pre></div>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">event</span><span class="p">,</span> <span class="n">pool</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -48,9 +48,11 @@
         <a class='octothorpe' href='#section-2'>#</a>
       </div>
       <p>sqlite的PRAGMA语句需要在每次连接开始时执行</p>
+<p>切换sqlite3到autocommit模式</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">cursor</span> <span class="o">=</span> <span class="n">dbapi_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">dbapi_connection</span><span class="o">.</span><span class="n">isolation_level</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">dbapi_connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -63,8 +65,7 @@
 需要sqlite3.7.0版本以上支持</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;PRAGMA journal_mode=WAL&quot;</span><span class="p">)</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;PRAGMA journal_mode = WAL&#39;</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -73,11 +74,11 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-4'>#</a>
       </div>
-      
+      <p>sqlite3文档中说WAL模式下默认同步模式是NORMAL，但实际上还是需要手动设置</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">dbapi2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;PRAGMA synchronous = NORMAL&#39;</span><span class="p">)</span>
+    <span class="n">dbapi_connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -85,6 +86,35 @@
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <h3>创建数据库</h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <pre><code>参照benchmark.py的结果，sqlite3查询会阻塞整个进程。解决办法是尽量快速完成写入。
+
+在部署产品时务必确保sqlite3版本高于3.7.0,否则低下的写入性能会影响网站响应
+</code></pre>
+<p>只会有写入操作，写入时整个文件加锁，无法并发写入。所以用StaticPool，确保所有greenlet只使用一个连接，除去反复建立连接的开销。
+如果需要读取数据库，可以换成QueuePool或SingletonThreadPool</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">engine</span> <span class="o">=</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">dbapi2</span><span class="p">,</span> <span class="n">poolclass</span><span class="o">=</span><span class="n">sqlalchemy</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">StaticPool</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p>只在sqlite3.7以上版本时开启WAL模式</p>
     </div>

@@ -143,16 +143,15 @@ class Answer(object):
 
         可能的请求参数有
 
-        - selected -- 用户选择的选项id号，整数
+        - selected -- 用户选择的选项id号，多个选项用逗号连接，字符串
         - correct -- 是否正确，会被转化为bool类型。空白或不发送表示错误，也可以用'true'和'false'明确指定
 
         返回
 
         - inserted -- 一个数组，包含了插入记录的id
         """
-        selected = req.get_param_as_int('selected', required=True)
+        selected = req.get_param('selected', required=True)
         correct = req.get_param_as_bool('correct') or False
-        print(correct)
         with self.db.connect() as connection:
             sql = records.insert().values(
                 uid=uid,

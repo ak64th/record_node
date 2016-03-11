@@ -191,7 +191,7 @@ class TestAnswer(testing.TestBase):
         self.test_run_id = self.getUniqueString('run_id')
         self.test_score = self.getUniqueInteger()
         self.test_uid = self.getUniqueInteger()
-        self.test_selected = self.getUniqueInteger()
+        self.test_selected = ','.join([str(self.getUniqueInteger()) for i in range(3)])
 
     def after(self):
         self.db.dispose()

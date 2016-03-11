@@ -13,7 +13,7 @@ records = Table(
     Column('run', String),
     Column('game', Integer),
     Column('question', Integer),
-    Column('selected', Integer),
+    Column('selected', String),
     Column('correct', Boolean),
     Column('timestamp', DateTime, default=datetime.utcnow),
 )
