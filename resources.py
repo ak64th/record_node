@@ -150,16 +150,19 @@ class Answer(object):
 
         - inserted -- 一个数组，包含了插入记录的id
         """
-        selected = req.get_param('selected', required=True)
-        correct = req.get_param_as_bool('correct') or False
+        selected = req.get_param('selected')
+        if not selected:
+            correct = False
+        else:
+            correct = req.get_param_as_bool('correct') or False
+        sql = records.insert().values(
+            uid=uid,
+            run=run_id,
+            game=game_id,
+            question=question_id,
+            selected=selected,
+            correct=correct,
+        )
         with self.db.connect() as connection:
-            sql = records.insert().values(
-                uid=uid,
-                run=run_id,
-                game=game_id,
-                question=question_id,
-                selected=selected,
-                correct=correct,
-            )
             result = connection.execute(sql)
         resp.body = json.dumps({'inserted': result.inserted_primary_key})

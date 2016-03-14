@@ -238,18 +238,25 @@ class TestAnswer(testing.TestBase):
         self.assertEquals(self.test_selected, row['selected'])
         self.assertFalse(row['correct'])
 
-    def test_with_no_selected(self):
+    def test_without_selection(self):
         query_string = urlencode({
             'run_id': self.test_run_id,
             'uid': self.test_uid,
             'correct': 'true'
         })
         body = self.simulate_request('/answer/1/12 ', method='POST', query_string=query_string, decode='utf-8')
-        self.assertEquals(falcon.HTTP_400, self.srmock.status)
+        self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
-        self.assertEquals('Missing parameter', data['title'])
+        self.assertIn('inserted', data, 'return inserted id')
+        self.assertEquals([1], data['inserted'])
         row = self.db.execute(records.select()).fetchone()
-        self.assertIsNone(row, 'no data was inserted')
+        self.assertIn(row['id'], data['inserted'])
+        self.assertEquals(1, row['game'])
+        self.assertEquals(12, row['question'])
+        self.assertEquals(self.test_run_id, row['run'])
+        self.assertEquals(self.test_uid, row['uid'])
+        self.assertIsNone(row['selected'])
+        self.assertFalse(row['correct'])
 
 
 class TestExtractRunningInfoHook(testing.TestBase):
