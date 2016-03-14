@@ -2,7 +2,7 @@
 # 优先使用pysqlite2，python自带的sqlite3和pysqlite2是一个代码库，但版本较低
 try:
     from pysqlite2 import dbapi2
-except ImportError:
+except ImportError:  # pragma: no cover
     from sqlite3 import dbapi2
 
 import sqlalchemy
