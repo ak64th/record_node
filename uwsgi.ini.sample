@@ -1,0 +1,15 @@
+[uwsgi]
+chdir = /root/node_record/
+virtualenv = /root/node_record/env/
+socket = :3032
+module = app:api
+gevent = True
+async = 500
+gevent-monkey-patch = True
+master = True
+worker = 4
+processes = 4
+protocol = uwsgi
+pidfile = uwsgi.pid
+uid = uwsgi
+daemonize = uwsgi.log
