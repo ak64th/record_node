@@ -1,4 +1,4 @@
-Cython==0.23.4
+Cython==0.24
 falcon==0.3.0
 redis==2.10.5
 simplejson==3.8.2
