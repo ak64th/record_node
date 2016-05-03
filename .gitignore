@@ -10,3 +10,4 @@ env/
 *.bak
 *.conf
 *.ini
+/docs/coverage
