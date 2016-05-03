@@ -22,7 +22,7 @@
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pysqlite2</span> <span class="kn">import</span> <span class="n">dbapi2</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">sqlite3</span> <span class="kn">import</span> <span class="n">dbapi2</span>
 
 <span class="kn">import</span> <span class="nn">sqlalchemy</span>
@@ -88,6 +88,8 @@
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
       <h3>创建数据库</h3>
+<p>参照benchmark.py的结果，sqlite3查询会阻塞整个进程。解决办法是尽量快速完成写入。
+在部署产品时务必确保sqlite3版本高于3.7.0,否则低下的写入性能会影响网站响应</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span></pre></div>
@@ -99,11 +101,7 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-6'>#</a>
       </div>
-      <pre><code>参照benchmark.py的结果，sqlite3查询会阻塞整个进程。解决办法是尽量快速完成写入。
-
-在部署产品时务必确保sqlite3版本高于3.7.0,否则低下的写入性能会影响网站响应
-</code></pre>
-<p>只会有写入操作，写入时整个文件加锁，无法并发写入。所以用StaticPool，确保所有greenlet只使用一个连接，除去反复建立连接的开销。
+      <p>只会有写入操作，写入时整个文件加锁，无法并发写入。所以用StaticPool，确保所有greenlet只使用一个连接，除去反复建立连接的开销。
 如果需要读取数据库，可以换成QueuePool或SingletonThreadPool</p>
     </div>
     <div class='code'>

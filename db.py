@@ -25,9 +25,9 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def create_engine(url, **kwargs):
-    """ ###创建数据库
+    """
+    ###创建数据库
     参照benchmark.py的结果，sqlite3查询会阻塞整个进程。解决办法是尽量快速完成写入。
-
     在部署产品时务必确保sqlite3版本高于3.7.0,否则低下的写入性能会影响网站响应
     """
     # 只会有写入操作，写入时整个文件加锁，无法并发写入。所以用StaticPool，确保所有greenlet只使用一个连接，除去反复建立连接的开销。
