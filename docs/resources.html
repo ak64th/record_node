@@ -391,17 +391,20 @@
 </ul>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="n">selected</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">correct</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param_as_bool</span><span class="p">(</span><span class="s1">&#39;correct&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">False</span>
+      <div class="highlight"><pre>        <span class="n">selected</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;selected&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">selected</span><span class="p">:</span>
+            <span class="n">correct</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">correct</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">get_param_as_bool</span><span class="p">(</span><span class="s1">&#39;correct&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">False</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">,</span>
+            <span class="n">run</span><span class="o">=</span><span class="n">run_id</span><span class="p">,</span>
+            <span class="n">game</span><span class="o">=</span><span class="n">game_id</span><span class="p">,</span>
+            <span class="n">question</span><span class="o">=</span><span class="n">question_id</span><span class="p">,</span>
+            <span class="n">selected</span><span class="o">=</span><span class="n">selected</span><span class="p">,</span>
+            <span class="n">correct</span><span class="o">=</span><span class="n">correct</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
-            <span class="n">sql</span> <span class="o">=</span> <span class="n">records</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
-                <span class="n">uid</span><span class="o">=</span><span class="n">uid</span><span class="p">,</span>
-                <span class="n">run</span><span class="o">=</span><span class="n">run_id</span><span class="p">,</span>
-                <span class="n">game</span><span class="o">=</span><span class="n">game_id</span><span class="p">,</span>
-                <span class="n">question</span><span class="o">=</span><span class="n">question_id</span><span class="p">,</span>
-                <span class="n">selected</span><span class="o">=</span><span class="n">selected</span><span class="p">,</span>
-                <span class="n">correct</span><span class="o">=</span><span class="n">correct</span><span class="p">,</span>
-            <span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
         <span class="n">resp</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s1">&#39;inserted&#39;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">inserted_primary_key</span><span class="p">})</span>
 
