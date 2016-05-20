@@ -31,7 +31,8 @@ class TestStart(testing.TestBase):
         self.assertEquals(falcon.HTTP_200, self.srmock.status)
         data = json.loads(body)
         self.assertIn('run_id', data, 'run_id has been set')
-        self.assertIsNone(self.redis.hget('game:1:run', data['run_id']), 'redis hash should be empty')
+        self.assertIsNone(self.redis.hget('game:1:run', data['run_id']), 'redis run hash should be empty')
+        self.assertIsNone(self.redis.hget('game:1:start', data['run_id']), 'redis start hash should be empty')
 
     def test_with_uid(self):
         _uid = 25
@@ -45,6 +46,7 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertIsNone(self.redis.hget('game:1:userinfo', data['uid']), 'should not save userinfo')
+        self.assertTrue(self.redis.hexists('game:1:start', data['run_id']), 'should record start time')
 
     def test_with_userinfo_only(self):
         query_string = urlencode({'userinfo': json.dumps({'a': '1', 'b': '2'})})
@@ -66,6 +68,7 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
+        self.assertTrue(self.redis.hexists('game:1:start', data['run_id']), 'should record start time')
 
     def test_with_userinfo_and_hash_collision(self):
         _hash = 105
@@ -81,6 +84,7 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
+        self.assertTrue(self.redis.hexists('game:1:start', data['run_id']), 'should record start time')
 
     def test_with_used_userinfo_and_hash(self):
         _hash = 105
@@ -96,6 +100,7 @@ class TestStart(testing.TestBase):
         self.assertEquals(str(data['uid']), self.redis.hget('game:1:run', data['run_id']),
                           'store run_id and uid in redis')
         self.assertEquals(_userinfo, self.redis.hget('game:1:userinfo', data['uid']), 'store userinfo and uid in redis')
+        self.assertTrue(self.redis.hexists('game:1:start', data['run_id']), 'should record start time')
 
 
 # noinspection PyArgumentList
@@ -124,6 +129,7 @@ class TestEnd(testing.TestBase):
         self.assertNotIn('best_rank', data, 'no best_rank')
         self.assertEquals(1, data['rank'], 'rank should be 1')
         self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
+        self.assertTrue(self.redis.hexists('game:1:end', _run_id), 'should record end time')
 
     def test_with_uid(self):
         _run_id = 'some_random_thing'
@@ -140,6 +146,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(_score, data['best_score'], 'score should be set as best score')
         self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
         self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
+        self.assertTrue(self.redis.hexists('game:1:end', _run_id), 'should record end time')
 
     def test_update_best_records(self):
         _run_id = 'some_random_thing'
@@ -158,6 +165,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(_score, data['best_score'], 'score should be set as best score')
         self.assertEquals(1, data['best_rank'], 'best_rank should be 1')
         self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
+        self.assertTrue(self.redis.hexists('game:1:end', _run_id), 'should record end time')
 
     def test_oot_update(self):
         _run_id = 'some_random_thing'
@@ -176,6 +184,7 @@ class TestEnd(testing.TestBase):
         self.assertEquals(150, data['best_score'], 'score should be 150')
         self.assertEquals(0, data['best_rank'], 'best_rank should be 0')
         self.assertEquals(str(_score), self.redis.hget('game:1:final', _run_id))
+        self.assertTrue(self.redis.hexists('game:1:end', _run_id), 'should record end time')
 
 
 # noinspection PyArgumentList

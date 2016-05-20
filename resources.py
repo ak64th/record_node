@@ -1,5 +1,6 @@
 # coding=utf-8
 import uuid
+import datetime
 
 import simplejson as json
 import falcon
@@ -44,7 +45,10 @@ class Start(object):
             _hash = req.get_param_as_int('hash', required=True)
             uid = self._set_uid(game_id, _hash, userinfo)
         run_id = self._new_run_id()
-        self.redis.hset('game:%s:run' % game_id, run_id, uid)
+        p = self.redis.pipeline()
+        p.hset('game:%s:run' % game_id, run_id, uid)
+        p.hset('game:%s:start' % game_id, run_id,  datetime.datetime.utcnow)
+        p.execute()
         resp.body = json.dumps({'uid': uid, 'run_id': run_id})
 
     @staticmethod
@@ -108,6 +112,7 @@ class End(object):
             p.hget('game:%s:record:ranks' % game_id, uid)
 
         p.hset('game:%s:final' % game_id, run_id, score)
+        p.hset('game:%s:end' % game_id, run_id,  datetime.datetime.utcnow)
 
         result = p.execute()
         data = {'rank': result[1]}
