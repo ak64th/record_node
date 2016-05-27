@@ -47,7 +47,7 @@ class Start(object):
         run_id = self._new_run_id()
         p = self.redis.pipeline()
         p.hset('game:%s:run' % game_id, run_id, uid)
-        p.hset('game:%s:start' % game_id, run_id,  datetime.datetime.utcnow)
+        p.hset('game:%s:start' % game_id, run_id,  datetime.datetime.utcnow())
         p.execute()
         resp.body = json.dumps({'uid': uid, 'run_id': run_id})
 
@@ -112,7 +112,7 @@ class End(object):
             p.hget('game:%s:record:ranks' % game_id, uid)
 
         p.hset('game:%s:final' % game_id, run_id, score)
-        p.hset('game:%s:end' % game_id, run_id,  datetime.datetime.utcnow)
+        p.hset('game:%s:end' % game_id, run_id,  datetime.datetime.utcnow())
 
         result = p.execute()
         data = {'rank': result[1]}
