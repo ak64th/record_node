@@ -41,3 +41,8 @@ api.req_options.auto_parse_form_urlencoded = True
 api.add_route('/api/start/{game_id}', Start(r))
 api.add_route('/api/end/{game_id}', End(r))
 api.add_route('/api/answer/{game_id}/{question_id}', Answer(db))
+
+if __name__ == '__main__':
+    from wsgiref import simple_server
+    httpd = simple_server.make_server('127.0.0.1', 8000, api)
+    httpd.serve_forever()
