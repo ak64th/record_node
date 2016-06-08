@@ -31,6 +31,8 @@ metadata.create_all(db)
 [记录答题选择]: resources.html#Answer
 """
 api = falcon.API()
+api.req_options.auto_parse_form_urlencoded = True
+
 api.add_route('/api/start/{game_id}', Start(r))
 api.add_route('/api/end/{game_id}', End(r))
 api.add_route('/api/answer/{game_id}/{question_id}', Answer(db))
