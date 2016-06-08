@@ -11,3 +11,4 @@ env/
 *.conf
 *.ini
 /docs/coverage
+/configuration.py
