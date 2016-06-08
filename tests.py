@@ -14,10 +14,22 @@ from hooks import extract_running_info
 from db import create_engine, set_sqlite_pragma, dbapi2
 
 
+class _TestOnPost(testing.TestBase):
+    def before(self):
+        self.api.req_options.auto_parse_form_urlencoded = True
+
+    def simulate_request(self, path, **kwargs):
+        headers = {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+        query_string = kwargs.pop('query_string', None)
+        return super(_TestOnPost, self).simulate_request(
+            path, body=query_string, headers=headers, **kwargs)
+
+
 # noinspection PyArgumentList
-class TestStart(testing.TestBase):
+class TestStart(_TestOnPost):
     # noinspection PyAttributeOutsideInit
     def before(self):
+        super(TestStart, self).before()
         self.redis = FakeStrictRedis()
         self.resource = Start(self.redis)
         self.api.add_route('/start/{game_id}', self.resource)
@@ -104,14 +116,16 @@ class TestStart(testing.TestBase):
 
 
 # noinspection PyArgumentList
-class TestEnd(testing.TestBase):
+class TestEnd(_TestOnPost):
     # noinspection PyAttributeOutsideInit
     def before(self):
+        super(TestEnd, self).before()
         self.redis = FakeStrictRedis()
         self.redis.zadd('game:1:scores', 100, 100)
         self.redis.zadd('game:1:scores', 110, 110)
         self.resource = End(self.redis)
         self.api.add_route('/end/{game_id}', self.resource)
+        self.api.req_options.auto_parse_form_urlencoded = True
 
     def after(self):
         self.redis.flushall()
@@ -188,13 +202,15 @@ class TestEnd(testing.TestBase):
 
 
 # noinspection PyArgumentList
-class TestAnswer(testing.TestBase):
+class TestAnswer(_TestOnPost):
     # noinspection PyAttributeOutsideInit
     def before(self):
+        super(TestAnswer, self).before()
         self.db = create_engine('sqlite://')
         metadata.create_all(self.db)
         self.resource = Answer(self.db)
         self.api.add_route('/answer/{game_id}/{question_id}', self.resource)
+        self.api.req_options.auto_parse_form_urlencoded = True
 
         # test data
         self.test_run_id = self.getUniqueString('run_id')
@@ -274,6 +290,7 @@ class TestExtractRunningInfoHook(testing.TestBase):
         validate_resource = falcon.before(extract_running_info)(testing.TestResource)
         self.resource = validate_resource()
         self.api.add_route(self.test_route, self.resource)
+        self.api.req_options.auto_parse_form_urlencoded = True
 
     def test_with_only_run_id(self):
         _run_id = 'some_random_thing'
