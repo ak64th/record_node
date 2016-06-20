@@ -1,5 +1,6 @@
 config = {
     'DATABASE_URL': 'sqlite:///records.db',
+    'DESTINATION_DATABASE_URL': 'mysql+pymysql://username:password@url/yizhan?charset=utf8',
     'REDIS': {
         'host': 'localhost',
         'port': '6379',
